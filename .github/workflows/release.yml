@@ -1,0 +1,36 @@
+name: Release
+
+# Publishes mcp-passport to crates.io on a v* tag. Idempotent + secret-optional: if
+# CARGO_REGISTRY_TOKEN is unset the publish is skipped, and an already-published version is
+# treated as success — so (re-)tagging never turns the run red.
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Verify
+        run: |
+          cargo fmt --all --check
+          cargo clippy --all-targets --all-features -- -D warnings
+          cargo test --all-features
+      - name: Publish to crates.io
+        env:
+          TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          if [ -z "${TOKEN:-}" ]; then
+            echo "No CARGO_REGISTRY_TOKEN secret set — skipping publish (publish manually with 'cargo publish')."
+            exit 0
+          fi
+          if cargo publish --token "$TOKEN" 2>&1 | tee /tmp/pub.log; then
+            echo "published"
+          elif grep -qiE "already (exists|uploaded)|already published" /tmp/pub.log; then
+            echo "this version is already on crates.io — treating as success"
+          else
+            exit 1
+          fi

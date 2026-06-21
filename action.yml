@@ -1,0 +1,36 @@
+name: "mcp-passport check"
+description: "Validate your server.json is ready to publish to the MCP Registry."
+branding:
+  icon: "check-circle"
+  color: "green"
+
+inputs:
+  path:
+    description: "server.json file, or a directory containing one."
+    required: false
+    default: "."
+  fail-on:
+    description: "Severity that fails the job: error | warning | info | never."
+    required: false
+    default: "error"
+  format:
+    description: "Output format: human | sarif | json."
+    required: false
+    default: "human"
+  version:
+    description: "Version of mcp-passport to install from crates.io."
+    required: false
+    default: "0.1.0"
+
+runs:
+  using: composite
+  steps:
+    - name: Install mcp-passport
+      shell: bash
+      run: cargo install mcp-passport --version "${{ inputs.version }}" --locked
+    - name: Validate server.json
+      shell: bash
+      run: |
+        mcp-passport "${{ inputs.path }}" \
+          --fail-on "${{ inputs.fail-on }}" \
+          --format "${{ inputs.format }}"

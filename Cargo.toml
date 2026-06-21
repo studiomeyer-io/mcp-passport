@@ -1,0 +1,34 @@
+[package]
+name = "mcp-passport"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.86"
+license = "MIT"
+authors = ["StudioMeyer <hello@studiomeyer.io>"]
+description = "Publish-readiness validator for the MCP Registry. Checks your server.json against the schema (required fields, reverse-DNS name, packages/remotes, transport) and cross-checks version + mcpName consistency with package.json / Cargo.toml / pyproject.toml before you run mcp-publisher."
+repository = "https://github.com/studiomeyer-io/mcp-passport"
+homepage = "https://github.com/studiomeyer-io/mcp-passport"
+readme = "README.md"
+keywords = ["mcp", "model-context", "registry", "validator", "ci"]
+categories = ["command-line-utilities", "development-tools"]
+
+[lib]
+name = "mcp_passport"
+path = "src/lib.rs"
+
+[[bin]]
+name = "mcp-passport"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+regex = "1"
+toml = "0.8"
+anyhow = "1"
+
+[profile.release]
+strip = true
+lto = "thin"
+opt-level = 3
